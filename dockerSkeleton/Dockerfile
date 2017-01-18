@@ -1,33 +1,12 @@
-#
-# Dockerfile for building a blackbox container with a nodejs server interfacing to a client binary.
-#
-FROM buildpack-deps:trusty-curl
+# Dockerfile for example whisk docker action
+FROM openwhisk/dockerskeleton
+ 
+ENV FLASK_PROXY_PORT 8080
 
-ENV DEBIAN_FRONTEND noninteractive
+### Add source file(s)
+RUN apk update
+RUN apk add aspell-en aspell
+RUN rm -f /action/exec
+ADD action.sh /action/exec
 
-# based on https://github.com/nodejs/docker-node
-ENV NODE_VERSION 0.12.14
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
-  && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.gz"
-
-# Get gcc
-RUN apt-get update --fix-missing && \
-apt-get -y install gcc
-
-RUN mkdir /logs
-
-ADD ./client /blackbox/client
-ADD ./server /blackbox/server
-
-RUN cd /blackbox/server; rm -rf node_modules logs
-RUN cd /blackbox/server; npm install . 
-
-RUN apt-get install -y aspell
-RUN rm -f /blackbox/client/action
-ADD action.sh /blackbox/client/action
-
-# Final steps
-RUN chmod uog+x /blackbox/client/action
-EXPOSE 8080
-CMD ["/bin/bash", "-c", "cd blackbox/server && node ./app.js"]
+CMD ["/bin/bash", "-c", "cd actionProxy && python -u actionproxy.py"]
