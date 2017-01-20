@@ -12,7 +12,7 @@ FILE=/tmp/output.txt
 # then decode it from base64 format, and dump the result to a file.
 echo $1 | sed -e 's/b64.://g' \
         | tr -d '"' | tr -d ' ' | tr -d '}' | tr -d '{' \
-        | base64 --decode >& $FILE
+        | base64 -d >& $FILE
 
 # Pipe the input file to aspell, and then format the result on one line with
 # spaces as delimiters
